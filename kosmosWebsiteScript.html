@@ -233,10 +233,14 @@
                   // --- Format the end date to YYYY-MM-DD ---
                   const endDateString = flatpickr.formatDate(selectedEndDate, "Y-m-d");
 
+                  // Get promo code from input field
+                  const promoCodeInput = document.getElementById('promo-code-input');
+                  const voucherCodeString = promoCodeInput ? promoCodeInput.value.trim() : '';
+
                   console.log(`Formatted Dates - Start: ${startDateString}, End: ${endDateString}`);
 
                   // --- Construct the URL dynamically ---
-                  const targetUrl = `https://app.mews.com/distributor/24478488-8110-4048-ad57-b1c400792e2b?mewsStart=${startDateString}&mewsEnd=${endDateString}&mewsRoute=rates&mewsRoom=25e8c786-0920-46f0-bf62-b1c4007930c5`;
+                  const targetUrl = `https://app.mews.com/distributor/24478488-8110-4048-ad57-b1c400792e2b?mewsStart=${startDateString}&mewsEnd=${endDateString}&mewsRoute=rates&mewsRoom=25e8c786-0920-46f0-bf62-b1c4007930c5&mewsVoucherCode=${encodeURIComponent(voucherCodeString)}`;
 
                   console.log("Redirecting to dynamic Mews URL:", targetUrl);
                   window.location.href = targetUrl; // Perform the redirect
