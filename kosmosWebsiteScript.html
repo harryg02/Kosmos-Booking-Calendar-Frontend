@@ -1,0 +1,277 @@
+<style>
+  /* Add this rule to remove the shadow */
+  .flatpickr-calendar {
+    box-shadow: none !important; /* Use !important to ensure override */
+  }
+
+  /* You can keep other custom styles here */
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange,
+.flatpickr-day.selected.prevMonthDay, /* Add prevMonthDay combination */
+.flatpickr-day.startRange.prevMonthDay,
+.flatpickr-day.endRange.prevMonthDay,
+.flatpickr-day.selected.nextMonthDay, /* Add nextMonthDay combination */
+.flatpickr-day.startRange.nextMonthDay,
+.flatpickr-day.endRange.nextMonthDay,
+/* --- Include Hover states for all combinations --- */
+.flatpickr-day.selected:hover,
+.flatpickr-day.startRange:hover,
+.flatpickr-day.endRange:hover,
+.flatpickr-day.selected.prevMonthDay:hover,
+.flatpickr-day.startRange.prevMonthDay:hover,
+.flatpickr-day.endRange.prevMonthDay:hover,
+.flatpickr-day.selected.nextMonthDay:hover,
+.flatpickr-day.startRange.nextMonthDay:hover,
+.flatpickr-day.endRange.nextMonthDay:hover,
+/* --- Include Focus states for all combinations --- */
+.flatpickr-day.selected:focus,
+.flatpickr-day.startRange:focus,
+.flatpickr-day.endRange:focus,
+.flatpickr-day.selected.prevMonthDay:focus,
+.flatpickr-day.startRange.prevMonthDay:focus,
+.flatpickr-day.endRange.prevMonthDay:focus,
+.flatpickr-day.selected.nextMonthDay:focus,
+.flatpickr-day.startRange.nextMonthDay:focus,
+.flatpickr-day.endRange.nextMonthDay:focus,
+.flatpickr-day.selected:focus-visible,
+.flatpickr-day.startRange:focus-visible,
+.flatpickr-day.endRange:focus-visible,
+.flatpickr-day.selected.prevMonthDay:focus-visible,
+.flatpickr-day.startRange.prevMonthDay:focus-visible,
+.flatpickr-day.endRange.prevMonthDay:focus-visible,
+.flatpickr-day.selected.nextMonthDay:focus-visible,
+.flatpickr-day.startRange.nextMonthDay:focus-visible,
+.flatpickr-day.endRange.nextMonthDay:focus-visible {
+    background-color: #392A3D;
+    border-color: #392A3D;
+    color: #fff;
+    outline: none !important;
+  }
+  
+
+  .flatpickr-day.inRange,
+  .flatpickr-day.inRange.nextMonthDay,
+  .flatpickr-day.inRange.prevMonthDay {
+    background: #EDE3DD; border-color: transparent;
+    box-shadow: -5px 0 0 #EDE3DD, 5px 0 0 #EDE3DD; color: #392A3D;
+  }
+  
+  /* Style for AVAILABLE days belonging to the previous or next month - NOT greyed out */
+  .flatpickr-day.prevMonthDay:not(.disabled):not(.flatpickr-disabled),
+  .flatpickr-day.nextMonthDay:not(.disabled):not(.flatpickr-disabled) {
+      color: #495057 !important; /* Use standard dark text color - adjust if needed */
+  }
+  
+  .flatpickr-day.startRange + .flatpickr-day.endRange {
+    /* Remove the left border that might be showing the blue */
+    border-left-color: transparent !important;
+    /* Ensure the box-shadow connects using the END date's background */
+    box-shadow: -5px 0 0 #392A3D !important; /* Use start/end color */
+	}
+
+  /* Add Padding Below Month Title */
+  .flatpickr-weekdays {
+    margin-top: 10px; 
+  }
+
+</style>
+
+<!-- booking engine's initialization call, it creates a new instance of the booking engine. Use your booking engine Configuration ID. -->
+<script>
+    Mews.Distributor({
+        configurationIds: [
+            '24478488-8110-4048-ad57-b1c400792e2b',
+        ],
+        openElements: '.distributor-open',
+    });
+</script>
+
+<script>
+  // --- Helper Function to format Date to YYYY-MM-DD ---
+  function formatDate(date) {
+    return date.toISOString().split('T')[0];
+  }
+
+  // --- Function to Fetch Unavailable Dates (Verified in Step 2) ---
+  async function fetchUnavailableDates(villaId, startDate, endDate) {
+    // !!! --- Use your ACTUAL Vercel function URL --- !!!
+    const apiUrl = 'https://mews-availability-js.vercel.app/api/mews-availability'; // Example URL
+    // !!! --------------------------------------------- !!!
+
+    console.log(`Fetching unavailability for ${villaId} from ${startDate} to ${endDate} via ${apiUrl}`);
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          villaId: villaId,
+          startDate: startDate,
+          endDate: endDate
+        }),
+      });
+
+      if (!response.ok) {
+        let errorDetails = `HTTP status ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorDetails += `: ${errorData.details || errorData.error || await response.text()}`;
+        } catch (e) {
+          errorDetails += `: ${await response.text()}`;
+        }
+        console.error("Error fetching availability:", errorDetails);
+        throw new Error(`Failed to fetch availability: ${errorDetails}`);
+      }
+
+      const data = await response.json();
+      console.log("Received unavailable dates for Flatpickr:", data.unavailable);
+      return data.unavailable || [];
+
+    } catch (error) {
+      console.error("Network or processing error fetching availability:", error);
+      // Return empty array so Flatpickr can still initialize
+      return [];
+    }
+  }
+
+  // Declare flatpickrInstance at a scope accessible to both functions
+  let flatpickrInstance;
+
+  // --- NEW: Function to Initialize Flatpickr (combines Steps 1 & 2) ---
+  async function initializeCalendar() {
+    const calendarDiv = document.getElementById("myCalendarContainer");
+    calendarDiv.innerText = "Loading availability data..."; // Update status
+
+    // --- !! IMPORTANT: Set the correct Villa ID here !! ---
+    const currentVillaId = "77e2cb20-d275-46f6-8a8a-af5f01533998"; 
+
+    if (!currentVillaId) {
+      console.error("Villa ID is not set.");
+      calendarDiv.innerText = "Error: Villa ID missing.";
+      return;
+    }
+
+    // Define the date range to pre-fetch unavailability for
+    const today = new Date();
+    const startDateToFetch = new Date(today);
+    const endDateToFetch = new Date(today);
+    // Fetch a decent range ahead for better user experience
+    endDateToFetch.setMonth(endDateToFetch.getMonth() + 6);
+
+    const formattedStartDate = formatDate(startDateToFetch);
+    const formattedEndDate = formatDate(endDateToFetch);
+
+    // Fetch the dates BEFORE initializing Flatpickr
+    const unavailableDates = await fetchUnavailableDates(
+      currentVillaId,
+      formattedStartDate,
+      formattedEndDate
+    );
+
+    // Check if fetching failed (returned empty array despite trying)
+    if (unavailableDates.length === 0) {
+      // You might want slightly different handling if the fetch *actually* failed
+      // vs. if there are truly no unavailable dates. The console logs help here.
+      console.warn("No unavailable dates received or fetch failed. Initializing calendar without specific disabled dates (except past).");
+      // Optional: Update UI message if fetch failed
+      // calendarDiv.innerText = "Could not load availability data. Please try again later.";
+    }
+
+    console.log("Initializing Flatpickr with disabled dates:", unavailableDates);
+    calendarDiv.innerText = ""; // Clear loading message
+
+    // Determine the number of months based on initial screen width
+    const screenWidth = window.innerWidth;
+    const monthsToShow = screenWidth < 720 ? 1 : 2;
+    console.log(`Initial screen width: ${screenWidth}px, showing ${monthsToShow} month(s).`);
+
+    // Initialize Flatpickr
+    flatpickrInstance = flatpickr("#myCalendarContainer", {
+      inline: true,
+      mode: "range",
+      showMonths: monthsToShow,
+      dateFormat: "Y-m-d",
+      minDate: "today",
+      // *** Use the fetched dates here! ***
+      disable: unavailableDates,
+      onChange: function(selectedDates, dateStr, instance) {
+        if (selectedDates.length === 2) {
+          console.log("Selected range:", dateStr);
+        }
+      },
+      // Add other options if needed
+    });
+    // Add the event listener AFTER flatpickr is initialized
+    setupNextButtonHandler();
+  }
+
+  function setupNextButtonHandler() {
+      const nextButton = document.getElementById('calendar-next-btn');
+      
+      if (nextButton) {
+          console.log("Found Next button, adding listener.");
+          
+          nextButton.addEventListener('click', () => {
+              console.log("Next button clicked!");
+
+
+              // --- CORRECTED Line 1: Check flatpickrInstance directly (no window.) ---
+              if (flatpickrInstance && flatpickrInstance.selectedDates.length === 2) {
+
+                  // --- Get the selected start date ---
+                  const selectedStartDate = flatpickrInstance.selectedDates[0]; // No window.
+
+                  // --- Get the selected end date ---
+                  const selectedEndDate = flatpickrInstance.selectedDates[1]; // No window.
+
+                  // --- Format the start date to YYYY-MM-DD ---
+                  const startDateString = flatpickr.formatDate(selectedStartDate, "Y-m-d");
+
+                  // --- Format the end date to YYYY-MM-DD ---
+                  const endDateString = flatpickr.formatDate(selectedEndDate, "Y-m-d");
+
+                  console.log(`Formatted Dates - Start: ${startDateString}, End: ${endDateString}`);
+
+                  // --- Construct the URL dynamically ---
+                  const targetUrl = `https://app.mews.com/distributor/24478488-8110-4048-ad57-b1c400792e2b?mewsStart=${startDateString}&mewsEnd=${endDateString}&mewsRoute=rates&mewsRoom=25e8c786-0920-46f0-bf62-b1c4007930c5`;
+
+                  console.log("Redirecting to dynamic Mews URL:", targetUrl);
+                  window.location.href = targetUrl; // Perform the redirect
+
+              } else {
+                  // --- Keep the debugging logs here ---
+                  console.log("Check failed. Current state:");
+                  // Check if the instance exists at all in this scope
+                  if (typeof flatpickrInstance === 'undefined') {
+                      console.error("flatpickrInstance is UNDEFINED in this scope!");
+                  } else if (flatpickrInstance === null) {
+                      console.error("flatpickrInstance is NULL (was it initialized?)");
+                  } else {
+                      // If instance exists, log the number of selected dates
+                      console.log("flatpickrInstance exists. Selected dates count:", flatpickrInstance.selectedDates.length);
+                  }
+                  alert("Please select both a check-in and check-out date on the calendar first.");
+              }
+          });
+
+      } else {
+          console.error("Could not find Next button (#calendar-next-btn).");
+      }
+    }
+
+  // --- Wait for the document and run initialization ---
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log("Document loaded. Initializing integrated calendar...");
+    initializeCalendar().catch(error => {
+      // Catch errors during the async initialization process
+      console.error("Failed to initialize calendar:", error);
+      document.getElementById("myCalendarContainer").innerText = `Error initializing calendar: ${error.message}`;
+    });
+
+
+  });
+
+</script>
