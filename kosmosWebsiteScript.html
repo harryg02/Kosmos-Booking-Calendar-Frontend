@@ -145,8 +145,8 @@
     const calendarDiv = document.getElementById("myCalendarContainer");
     calendarDiv.innerText = "Loading availability data..."; // Update status
 
-    // --- !! IMPORTANT: Set the correct Villa ID here !! ---
-    const currentVillaId = "77e2cb20-d275-46f6-8a8a-af5f01533998"; 
+    // Get the villa ID from the data attribute
+    const currentVillaId = calendarDiv.getAttribute("data-villa-id");
 
     if (!currentVillaId) {
       console.error("Villa ID is not set.");
