@@ -200,64 +200,51 @@
     });
   }
 
-  function setupNextButtonHandler() {
-      const nextButton = document.getElementById('calendar-next-btn');
+  function setupNextButtonHandler(calendarId, buttonId, villaId) {
+    const nextButton = document.getElementById(buttonId);
+    
+    if (nextButton) {
+      console.log(`Found Next button for ${calendarId}, adding listener.`);
       
-      if (nextButton) {
-          console.log("Found Next button, adding listener.");
-          
-          nextButton.addEventListener('click', () => {
-              console.log("Next button clicked!");
+      nextButton.addEventListener('click', () => {
+        console.log(`Next button clicked for ${calendarId}!`);
+        
+        // Get the appropriate instance based on calendarId
+        const instance = calendarId === "myCalendarContainer" ? 
+                        window.flatpickrInstances.calendar1 : 
+                        window.flatpickrInstances.calendar2;
 
+        if (instance && instance.selectedDates.length === 2) {
+          // Get the selected dates from the specific instance
+          const selectedStartDate = instance.selectedDates[0];
+          const selectedEndDate = instance.selectedDates[1];
 
-              // --- CORRECTED Line 1: Check flatpickrInstance directly (no window.) ---
-              if (flatpickrInstance && flatpickrInstance.selectedDates.length === 2) {
+          // Format the dates
+          const startDateString = flatpickr.formatDate(selectedStartDate, "Y-m-d");
+          const endDateString = flatpickr.formatDate(selectedEndDate, "Y-m-d");
 
-                  // --- Get the selected start date ---
-                  const selectedStartDate = flatpickrInstance.selectedDates[0]; // No window.
+          // Get promo code from input field
+          const promoCodeInput = document.getElementById('promo-code-input');
+          const voucherCodeString = promoCodeInput ? promoCodeInput.value.trim() : '';
 
-                  // --- Get the selected end date ---
-                  const selectedEndDate = flatpickrInstance.selectedDates[1]; // No window.
+          console.log(`Formatted Dates - Start: ${startDateString}, End: ${endDateString}`);
 
-                  // --- Format the start date to YYYY-MM-DD ---
-                  const startDateString = flatpickr.formatDate(selectedStartDate, "Y-m-d");
+          // Use the villaId parameter to construct the URL
+          const targetUrl = `https://app.mews.com/distributor/24478488-8110-4048-ad57-b1c400792e2b?mewsStart=${startDateString}&mewsEnd=${endDateString}&mewsRoute=rates&mewsRoom=${villaId}&mewsVoucherCode=${encodeURIComponent(voucherCodeString)}`;
 
-                  // --- Format the end date to YYYY-MM-DD ---
-                  const endDateString = flatpickr.formatDate(selectedEndDate, "Y-m-d");
-
-                  // Get promo code from input field
-                  const promoCodeInput = document.getElementById('promo-code-input');
-                  const voucherCodeString = promoCodeInput ? promoCodeInput.value.trim() : '';
-
-                  console.log(`Formatted Dates - Start: ${startDateString}, End: ${endDateString}`);
-
-                  // --- Construct the URL dynamically ---
-                  const targetUrl = `https://app.mews.com/distributor/24478488-8110-4048-ad57-b1c400792e2b?mewsStart=${startDateString}&mewsEnd=${endDateString}&mewsRoute=rates&mewsRoom=25e8c786-0920-46f0-bf62-b1c4007930c5&mewsVoucherCode=${encodeURIComponent(voucherCodeString)}`;
-
-                  console.log("Redirecting to dynamic Mews URL:", targetUrl);
-                  window.location.href = targetUrl; // Perform the redirect
-
-              } else {
-                  // --- Keep the debugging logs here ---
-                  console.log("Check failed. Current state:");
-                  // Check if the instance exists at all in this scope
-                  if (typeof flatpickrInstance === 'undefined') {
-                      console.error("flatpickrInstance is UNDEFINED in this scope!");
-                  } else if (flatpickrInstance === null) {
-                      console.error("flatpickrInstance is NULL (was it initialized?)");
-                  } else {
-                      // If instance exists, log the number of selected dates
-                      console.log("flatpickrInstance exists. Selected dates count:", flatpickrInstance.selectedDates.length);
-                  }
-                  alert("Please select both a check-in and check-out date on the calendar first.");
-              }
-          });
-
-      } else {
-          console.error("Could not find Next button (#calendar-next-btn).");
-      }
+          console.log("Redirecting to dynamic Mews URL:", targetUrl);
+          window.location.href = targetUrl; // Perform the redirect
+        } else {
+          console.log("Check failed. Selected dates count:", 
+                    instance ? instance.selectedDates.length : "instance not available");
+          alert("Please select both a check-in and check-out date on the calendar first.");
+        }
+      });
+    } else {
+      console.error(`Could not find Next button (#${buttonId}) for ${calendarId}.`);
     }
-
+  }
+    
   // Store instances but don't initialize immediately
   window.flatpickrInstances = {};
   let calendar1Initialized = false;
@@ -277,6 +264,8 @@
             initializeCalendar("myCalendarContainer").then(instance => {
               window.flatpickrInstances.calendar1 = instance;
               calendar1Initialized = true;
+              // Setup next button for Galaxy Villa
+              setupNextButtonHandler("myCalendarContainer", "calendar-next-btn", "25e8c786-0920-46f0-bf62-b1c4007930c5");
             });
           } else {
             // Calendar exists but was hidden, force redraw
@@ -294,6 +283,8 @@
             initializeCalendar("myCalendarContainer2").then(instance => {
               window.flatpickrInstances.calendar2 = instance;
               calendar2Initialized = true;
+              // Setup next button for Stargazing Villa - update room ID if needed
+              setupNextButtonHandler("myCalendarContainer2", "calendar-next-btn2", "eb50299f-e8cd-4462-9d16-b1c4007930c5");
             });
           } else {
             // Calendar exists but was hidden, force redraw
