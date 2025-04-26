@@ -255,44 +255,59 @@
     // Buttons with the specific IDs from Webflow
     const galaxyButton = document.getElementById('Book-Galaxy-Villa');
     const stargazingButton = document.getElementById('Book-Stargazing-Villa');
+    const switchGalaxyButton = document.getElementById('Switch-Galaxy-Villa');
+    const switchStargazingButton = document.getElementById('Switch-Stargazing-Villa');
     
+    // Function to handle Galaxy Villa calendar initialization/redraw
+    function initGalaxyCalendar() {
+      setTimeout(function() {
+        if (!calendar1Initialized) {
+          initializeCalendar("myCalendarContainer").then(instance => {
+            window.flatpickrInstances.calendar1 = instance;
+            calendar1Initialized = true;
+            // Setup next button for Galaxy Villa
+            setupNextButtonHandler("myCalendarContainer", "calendar-next-btn", "25e8c786-0920-46f0-bf62-b1c4007930c5");
+          });
+        } else {
+          // Calendar exists but was hidden, force redraw
+          window.flatpickrInstances.calendar1.redraw();
+        }
+      }, 100); // Small delay to ensure popup is visible
+    }
+    
+    // Function to handle Stargazing Villa calendar initialization/redraw
+    function initStargazingCalendar() {
+      setTimeout(function() {
+        if (!calendar2Initialized) {
+          initializeCalendar("myCalendarContainer2").then(instance => {
+            window.flatpickrInstances.calendar2 = instance;
+            calendar2Initialized = true;
+            // Setup next button for Stargazing Villa
+            setupNextButtonHandler("myCalendarContainer2", "calendar-next-btn2", "eb50299f-e8cd-4462-9d16-b1c4007930c5");
+          });
+        } else {
+          // Calendar exists but was hidden, force redraw
+          window.flatpickrInstances.calendar2.redraw();
+        }
+      }, 100); // Small delay to ensure popup is visible
+    }
+    
+    // Add click event listeners to all buttons
     if (galaxyButton) {
-      galaxyButton.addEventListener('click', function() {
-        // Give Webflow interaction a moment to show the popup
-        setTimeout(function() {
-          if (!calendar1Initialized) {
-            initializeCalendar("myCalendarContainer").then(instance => {
-              window.flatpickrInstances.calendar1 = instance;
-              calendar1Initialized = true;
-              // Setup next button for Galaxy Villa
-              setupNextButtonHandler("myCalendarContainer", "calendar-next-btn", "25e8c786-0920-46f0-bf62-b1c4007930c5");
-            });
-          } else {
-            // Calendar exists but was hidden, force redraw
-            window.flatpickrInstances.calendar1.redraw();
-          }
-        }, 100); // Small delay to ensure popup is visible
-      });
+      galaxyButton.addEventListener('click', initGalaxyCalendar);
+    }
+    
+    if (switchGalaxyButton) {
+      switchGalaxyButton.addEventListener('click', initGalaxyCalendar);
     }
     
     if (stargazingButton) {
-      stargazingButton.addEventListener('click', function() {
-        // Give Webflow interaction a moment to show the popup
-        setTimeout(function() {
-          if (!calendar2Initialized) {
-            initializeCalendar("myCalendarContainer2").then(instance => {
-              window.flatpickrInstances.calendar2 = instance;
-              calendar2Initialized = true;
-              // Setup next button for Stargazing Villa - update room ID if needed
-              setupNextButtonHandler("myCalendarContainer2", "calendar-next-btn2", "eb50299f-e8cd-4462-9d16-b1c4007930c5");
-            });
-          } else {
-            // Calendar exists but was hidden, force redraw
-            window.flatpickrInstances.calendar2.redraw();
-          }
-        }, 100); // Small delay to ensure popup is visible
-      });
+      stargazingButton.addEventListener('click', initStargazingCalendar);
+    }
+    
+    if (switchStargazingButton) {
+      switchStargazingButton.addEventListener('click', initStargazingCalendar);
     }
   });
-
+  
 </script>
