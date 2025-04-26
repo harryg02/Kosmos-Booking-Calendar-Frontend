@@ -258,35 +258,50 @@
       }
     }
 
-  // --- Wait for the document and run initialization ---
-  // Modify your document ready function to initialize both calendars
+  // Store instances but don't initialize immediately
+  window.flatpickrInstances = {};
+  let calendar1Initialized = false;
+  let calendar2Initialized = false;
+
+  // Add event listeners to the specific buttons
   document.addEventListener('DOMContentLoaded', function() {
-    console.log("Document loaded. Initializing calendars...");
+    // Buttons with the specific IDs from Webflow
+    const galaxyButton = document.getElementById('Book-Galaxy-Villa');
+    const stargazingButton = document.getElementById('Book-Stargazing-Villa');
     
-    // Create object to store both instances
-    window.flatpickrInstances = {};
+    if (galaxyButton) {
+      galaxyButton.addEventListener('click', function() {
+        // Give Webflow interaction a moment to show the popup
+        setTimeout(function() {
+          if (!calendar1Initialized) {
+            initializeCalendar("myCalendarContainer").then(instance => {
+              window.flatpickrInstances.calendar1 = instance;
+              calendar1Initialized = true;
+            });
+          } else {
+            // Calendar exists but was hidden, force redraw
+            window.flatpickrInstances.calendar1.redraw();
+          }
+        }, 100); // Small delay to ensure popup is visible
+      });
+    }
     
-    // Initialize first calendar
-    initializeCalendar("myCalendarContainer").then(instance => {
-      window.flatpickrInstances.calendar1 = instance;
-      
-      // Setup button handler for first calendar if needed
-      setupNextButtonHandler("myCalendarContainer", instance, "calendar-next-btn");
-    }).catch(error => {
-      console.error("Failed to initialize first calendar:", error);
-      document.getElementById("myCalendarContainer").innerText = `Error initializing calendar: ${error.message}`;
-    });
-    
-    // Initialize second calendar
-    initializeCalendar("myCalendarContainer2").then(instance => {
-      window.flatpickrInstances.calendar2 = instance;
-      
-      // Setup button handler for second calendar if needed
-      setupNextButtonHandler("myCalendarContainer2", instance, "calendar-next-btn2");
-    }).catch(error => {
-      console.error("Failed to initialize second calendar:", error);
-      document.getElementById("myCalendarContainer2").innerText = `Error initializing calendar: ${error.message}`;
-    });
+    if (stargazingButton) {
+      stargazingButton.addEventListener('click', function() {
+        // Give Webflow interaction a moment to show the popup
+        setTimeout(function() {
+          if (!calendar2Initialized) {
+            initializeCalendar("myCalendarContainer2").then(instance => {
+              window.flatpickrInstances.calendar2 = instance;
+              calendar2Initialized = true;
+            });
+          } else {
+            // Calendar exists but was hidden, force redraw
+            window.flatpickrInstances.calendar2.redraw();
+          }
+        }, 100); // Small delay to ensure popup is visible
+      });
+    }
   });
 
 </script>
