@@ -141,8 +141,8 @@
   let flatpickrInstance;
 
   // --- NEW: Function to Initialize Flatpickr (combines Steps 1 & 2) ---
-  async function initializeCalendar() {
-    const calendarDiv = document.getElementById("myCalendarContainer");
+  async function initializeCalendar(calendarId) {
+    const calendarDiv = document.getElementById(calendarId);
     calendarDiv.innerText = "Loading availability data..."; // Update status
 
     // Get the villa ID from the data attribute
@@ -173,14 +173,10 @@
 
     // Check if fetching failed (returned empty array despite trying)
     if (unavailableDates.length === 0) {
-      // You might want slightly different handling if the fetch *actually* failed
-      // vs. if there are truly no unavailable dates. The console logs help here.
       console.warn("No unavailable dates received or fetch failed. Initializing calendar without specific disabled dates (except past).");
-      // Optional: Update UI message if fetch failed
-      // calendarDiv.innerText = "Could not load availability data. Please try again later.";
     }
 
-    console.log("Initializing Flatpickr with disabled dates:", unavailableDates);
+    console.log(`Initializing Flatpickr for ${calendarId} with disabled dates:`, unavailableDates);
     calendarDiv.innerText = ""; // Clear loading message
 
     // Determine the number of months based on initial screen width
@@ -188,24 +184,20 @@
     const monthsToShow = screenWidth < 720 ? 1 : 2;
     console.log(`Initial screen width: ${screenWidth}px, showing ${monthsToShow} month(s).`);
 
-    // Initialize Flatpickr
-    flatpickrInstance = flatpickr("#myCalendarContainer", {
+    // Initialize Flatpickr with specific selector
+    return flatpickr(`#${calendarId}`, {
       inline: true,
       mode: "range",
       showMonths: monthsToShow,
       dateFormat: "Y-m-d",
       minDate: "today",
-      // *** Use the fetched dates here! ***
       disable: unavailableDates,
       onChange: function(selectedDates, dateStr, instance) {
         if (selectedDates.length === 2) {
-          console.log("Selected range:", dateStr);
+          console.log(`Selected range for ${calendarId}:`, dateStr);
         }
       },
-      // Add other options if needed
     });
-    // Add the event listener AFTER flatpickr is initialized
-    setupNextButtonHandler();
   }
 
   function setupNextButtonHandler() {
@@ -267,15 +259,34 @@
     }
 
   // --- Wait for the document and run initialization ---
+  // Modify your document ready function to initialize both calendars
   document.addEventListener('DOMContentLoaded', function() {
-    console.log("Document loaded. Initializing integrated calendar...");
-    initializeCalendar().catch(error => {
-      // Catch errors during the async initialization process
-      console.error("Failed to initialize calendar:", error);
+    console.log("Document loaded. Initializing calendars...");
+    
+    // Create object to store both instances
+    window.flatpickrInstances = {};
+    
+    // Initialize first calendar
+    initializeCalendar("myCalendarContainer").then(instance => {
+      window.flatpickrInstances.calendar1 = instance;
+      
+      // Setup button handler for first calendar if needed
+      setupNextButtonHandler("myCalendarContainer", instance, "calendar-next-btn");
+    }).catch(error => {
+      console.error("Failed to initialize first calendar:", error);
       document.getElementById("myCalendarContainer").innerText = `Error initializing calendar: ${error.message}`;
     });
-
-
+    
+    // Initialize second calendar
+    initializeCalendar("myCalendarContainer2").then(instance => {
+      window.flatpickrInstances.calendar2 = instance;
+      
+      // Setup button handler for second calendar if needed
+      setupNextButtonHandler("myCalendarContainer2", instance, "calendar-next-btn2");
+    }).catch(error => {
+      console.error("Failed to initialize second calendar:", error);
+      document.getElementById("myCalendarContainer2").innerText = `Error initializing calendar: ${error.message}`;
+    });
   });
 
 </script>
