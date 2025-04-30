@@ -171,6 +171,16 @@
       formattedEndDate
     );
 
+    // Build every date in that range, find the first available
+    const allDates = [];
+    let d = new Date(formattedStartDate);
+    const end = new Date(formattedEndDate);
+    while (d <= end) {
+      allDates.push(formatDate(d));
+      d.setDate(d.getDate() + 1);
+    }
+    const firstAvailable = allDates.find(date => !unavailableDates.includes(date));
+
     // Check if fetching failed (returned empty array despite trying)
     if (unavailableDates.length === 0) {
       console.warn("No unavailable dates received or fetch failed. Initializing calendar without specific disabled dates (except past).");
@@ -192,6 +202,10 @@
       dateFormat: "Y-m-d",
       minDate: "today",
       disable: unavailableDates,
+      onReady: (selectedDates, dateStr, instance) => {
+        // compute `firstAvailable` as above…
+        instance.jumpToDate(firstAvailable);
+      },
       onChange: function(selectedDates, dateStr, instance) {
         if (selectedDates.length === 2) {
           console.log(`Selected range for ${calendarId}:`, dateStr);
