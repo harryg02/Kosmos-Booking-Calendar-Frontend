@@ -250,29 +250,51 @@
         // compute `firstAvailable` as above…
         instance.jumpToDate(firstAvailable);
       },
-      onChange: function(selectedDates, dateStr, instance) {
-        // Original onChange logic
-        if (selectedDates.length === 2) {
-          console.log(`Selected range for ${calendarId}:`, dateStr);
+      onDayCreate: (dObj, dStr, fp, dayElem) => {
+        const day        = dayElem.dateObj;
+        const dayStr     = fp.formatDate(day, "Y-m-d");
+        const isEndOnly  = endOnlyDates.includes(dayStr);
+        const picked     = fp.selectedDates.length;
+        const start      = picked === 1 && fp.selectedDates[0];
+
+        // Always mark it so the CSS dot ::after is drawn
+        if (isEndOnly) {
+          dayElem.classList.add("only-end-date");
         }
-        
-        // Add this part - re-enable Nov 7 after first date selection
-        if (selectedDates.length === 1) {
-          // Find and re-enable the specific date(s) that can only be end dates
-          const onlyEndDateElements = document.querySelectorAll(".only-end-date");
-          onlyEndDateElements.forEach(elem => {
-            elem.classList.remove("flatpickr-disabled");
-          });
-          
-          // Extra validation - if somehow Nov 7 was selected as start date, clear it
-          const startDate = selectedDates[0];
-          const startStr = formatDate(startDate);
-          if (endOnlyDates.includes(startStr)) {
-            instance.clear();
-            alert("November 7, 2025 can only be selected as a check-out date");
+
+        if (picked === 0) {
+          // -- STATE 1: no pick yet --
+          if (isEndOnly) {
+            dayElem.classList.add("flatpickr-disabled"); 
           }
         }
-      },
+        else if (picked === 1) {
+          // -- STATE 2: picking end date --
+          if (day <= start) {
+            dayElem.classList.add("flatpickr-disabled");
+          }
+          // prevent spanning over another end‑only
+          else if (
+            endOnlyDates.some(x => {
+              const xo = new Date(x);
+              return xo > start && xo < day;
+            })
+          ) {
+            dayElem.classList.add("flatpickr-disabled");
+          }
+          // allow this one if it’s an end‑only AFTER start
+          else if (isEndOnly && day > start) {
+            dayElem.classList.remove("flatpickr-disabled");
+          }
+        }
+        else {
+          // -- STATE 3: two dates picked --
+          // revert to same rules as STATE 1:
+          if (isEndOnly) {
+            dayElem.classList.add("flatpickr-disabled");
+          }
+        }
+      }
     });
   }
 
