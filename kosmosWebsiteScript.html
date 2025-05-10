@@ -222,10 +222,19 @@
           dayElem.classList.add("only-end-date");
           dayElem.title = "This date can only be used as an end date";
         }
-        // 2) prevent spanning *over* any end‑only dates once a check‑in is chosen
+
+         // anything after you pick one date…
         if (fp.selectedDates.length === 1) {
+          // grab the check‑in
           const start = fp.selectedDates[0];
-          // if this cell is after the start AND there's an end‑only date in between
+
+          // a) disable every date before your start
+          if (currentDate < start) {
+            dayElem.classList.add("flatpickr-disabled");
+            return;
+          }
+
+          // b) disable any date that would jump over an end‑only date
           if (
             currentDate > start &&
             endOnlyDates.some(only => {
