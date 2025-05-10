@@ -75,23 +75,33 @@
     margin-top: 10px; 
   }
 
-</style>
+  .flatpickr-day.only-end-date {
+    /* Optional: Add visual indication that this date can only be an end date */
+    position: relative;
+  }
 
-<!-- booking engine's initialization call, it creates a new instance of the booking engine. Use your booking engine Configuration ID. -->
-<script>
-    Mews.Distributor({
-        configurationIds: [
-            '24478488-8110-4048-ad57-b1c400792e2b',
-        ],
-        openElements: '.distributor-open',
-    });
-</script>
+  .flatpickr-day.only-end-date:after {
+    content: "";
+    position: absolute;
+    bottom: 3px;
+    right: 3px;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #392A3D;
+  }
+
+</style>
 
 <script>
   // --- Helper Function to format Date to YYYY-MM-DD ---
   function formatDate(date) {
-    return date.toISOString().split('T')[0];
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
+
 
   // --- Function to Fetch Unavailable Dates (Verified in Step 2) ---
   async function fetchUnavailableDates(villaId, startDate, endDate) {
@@ -128,12 +138,16 @@
 
       const data = await response.json();
       console.log("Received unavailable dates for Flatpickr:", data.unavailable);
-      return data.unavailable || [];
+
+      return {
+        unavailable: data.unavailable || [],
+        endOnlyDates: data.endOnlyDates || []
+      };
 
     } catch (error) {
       console.error("Network or processing error fetching availability:", error);
       // Return empty array so Flatpickr can still initialize
-      return [];
+      return { unavailable: [], endOnlyDates: [] };
     }
   }
 
@@ -165,11 +179,7 @@
     const formattedEndDate = formatDate(endDateToFetch);
 
     // Fetch the dates BEFORE initializing Flatpickr
-    const unavailableDates = await fetchUnavailableDates(
-      currentVillaId,
-      formattedStartDate,
-      formattedEndDate
-    );
+    const { unavailable: unavailableDates, endOnlyDates } = await fetchUnavailableDates(currentVillaId, formattedStartDate, formattedEndDate);
 
     // Build every date in that range, find the first available
     const allDates = [];
@@ -202,13 +212,42 @@
       dateFormat: "Y-m-d",
       minDate: "today",
       disable: unavailableDates,
+      onDayCreate: function(dObj, dStr, fp, dayElem) {
+        const currentDate = dayElem.dateObj;
+        const dayStr = formatDate(currentDate);
+        
+        // If this is Nov 7 and no dates selected yet, mark it as disabled for start date
+        if (endOnlyDates.includes(dayStr) && fp.selectedDates.length === 0) {
+          dayElem.classList.add("flatpickr-disabled");
+          dayElem.classList.add("only-end-date");
+          dayElem.title = "This date can only be used as an end date";
+        }
+      },
       onReady: (selectedDates, dateStr, instance) => {
         // compute `firstAvailable` as above…
         instance.jumpToDate(firstAvailable);
       },
       onChange: function(selectedDates, dateStr, instance) {
+        // Original onChange logic
         if (selectedDates.length === 2) {
           console.log(`Selected range for ${calendarId}:`, dateStr);
+        }
+        
+        // Add this part - re-enable Nov 7 after first date selection
+        if (selectedDates.length === 1) {
+          // Find and re-enable the specific date(s) that can only be end dates
+          const onlyEndDateElements = document.querySelectorAll(".only-end-date");
+          onlyEndDateElements.forEach(elem => {
+            elem.classList.remove("flatpickr-disabled");
+          });
+          
+          // Extra validation - if somehow Nov 7 was selected as start date, clear it
+          const startDate = selectedDates[0];
+          const startStr = formatDate(startDate);
+          if (endOnlyDates.includes(startStr)) {
+            instance.clear();
+            alert("November 7, 2025 can only be selected as a check-out date");
+          }
         }
       },
     });
