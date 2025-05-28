@@ -276,7 +276,11 @@
       onMonthChange: async function(selectedDates, dateStr, instance) {
         // if the user’s looking beyond our last-loaded date…
         const firstVisible = new Date(instance.currentYear, instance.currentMonth);
-        if (firstVisible > endDateToFetch) {
+        // ↓ new threshold 1 month shy of our fetch‐end
+        const threshold = new Date(endDateToFetch);
+        threshold.setMonth(threshold.getMonth() - 1);
+
+        if (firstVisible > threshold) {
           // blank out the calendar and switch to a flex-center layout
           calendarDiv.classList.add("loading-overlay");
           calendarDiv.innerHTML = '<div class="loading-overlay__text">Loading availability data…</div>';
