@@ -102,11 +102,27 @@
   }
 
   /* style the text as you like */
+  /* Replace your .loading-overlay__text rules with: */
   .loading-overlay__text {
-    font-size: 1rem;
-    color: #495057;
+    /* spinner styling */
+    border: 6px solid #F6F0ED;       /* light grey */
+    border-top: 6px solid #392A3D;   /* blue */
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 2s linear infinite;
+    
+    /* hide the inner text visually but keep it for screen-readers */
+    text-indent: -9999px;
+    overflow: hidden;
+    display: inline-block;
   }
 
+  /* keyframes for the rotation */
+  @keyframes spin {
+    0%   { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
   .loading-overlay .flatpickr-calendar {
     display: none !important;
   }
