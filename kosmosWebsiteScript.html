@@ -251,6 +251,27 @@
         // compute `firstAvailable` as above…
         instance.jumpToDate(firstAvailable);
       },
+      onMonthChange: async function(selectedDates, dateStr, instance) {
+        // if the user’s looking beyond our last-loaded date…
+        const firstVisible = new Date(instance.currentYear, instance.currentMonth);
+        if (firstVisible > endDateToFetch) {
+          calendarDiv.innerText = "Loading availability data…";
+
+          // fetch the next 12 months
+          const nextStart = formatDate(endDateToFetch);
+          endDateToFetch.setMonth(endDateToFetch.getMonth() + 12);
+          const nextEnd = formatDate(endDateToFetch);
+          const { unavailable: more, endOnlyDates: moreEnds } =
+            await fetchUnavailableDates(currentVillaId, nextStart, nextEnd);
+
+          unavailableDates.push(...more);
+          endOnlyDates.push(...moreEnds);
+          instance.set("disable", unavailableDates);
+          instance.redraw();
+
+          calendarDiv.innerText = "";
+        }
+      },
       onDayCreate: (dObj, dStr, fp, dayElem) => {
         const day        = dayElem.dateObj;
         const dayStr     = fp.formatDate(day, "Y-m-d");
