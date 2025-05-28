@@ -6,44 +6,44 @@
   }
 
   /* You can keep other custom styles here */
-.flatpickr-day.selected,
-.flatpickr-day.startRange,
-.flatpickr-day.endRange,
-.flatpickr-day.selected.prevMonthDay, /* Add prevMonthDay combination */
-.flatpickr-day.startRange.prevMonthDay,
-.flatpickr-day.endRange.prevMonthDay,
-.flatpickr-day.selected.nextMonthDay, /* Add nextMonthDay combination */
-.flatpickr-day.startRange.nextMonthDay,
-.flatpickr-day.endRange.nextMonthDay,
-/* --- Include Hover states for all combinations --- */
-.flatpickr-day.selected:hover,
-.flatpickr-day.startRange:hover,
-.flatpickr-day.endRange:hover,
-.flatpickr-day.selected.prevMonthDay:hover,
-.flatpickr-day.startRange.prevMonthDay:hover,
-.flatpickr-day.endRange.prevMonthDay:hover,
-.flatpickr-day.selected.nextMonthDay:hover,
-.flatpickr-day.startRange.nextMonthDay:hover,
-.flatpickr-day.endRange.nextMonthDay:hover,
-/* --- Include Focus states for all combinations --- */
-.flatpickr-day.selected:focus,
-.flatpickr-day.startRange:focus,
-.flatpickr-day.endRange:focus,
-.flatpickr-day.selected.prevMonthDay:focus,
-.flatpickr-day.startRange.prevMonthDay:focus,
-.flatpickr-day.endRange.prevMonthDay:focus,
-.flatpickr-day.selected.nextMonthDay:focus,
-.flatpickr-day.startRange.nextMonthDay:focus,
-.flatpickr-day.endRange.nextMonthDay:focus,
-.flatpickr-day.selected:focus-visible,
-.flatpickr-day.startRange:focus-visible,
-.flatpickr-day.endRange:focus-visible,
-.flatpickr-day.selected.prevMonthDay:focus-visible,
-.flatpickr-day.startRange.prevMonthDay:focus-visible,
-.flatpickr-day.endRange.prevMonthDay:focus-visible,
-.flatpickr-day.selected.nextMonthDay:focus-visible,
-.flatpickr-day.startRange.nextMonthDay:focus-visible,
-.flatpickr-day.endRange.nextMonthDay:focus-visible {
+  .flatpickr-day.selected,
+  .flatpickr-day.startRange,
+  .flatpickr-day.endRange,
+  .flatpickr-day.selected.prevMonthDay, /* Add prevMonthDay combination */
+  .flatpickr-day.startRange.prevMonthDay,
+  .flatpickr-day.endRange.prevMonthDay,
+  .flatpickr-day.selected.nextMonthDay, /* Add nextMonthDay combination */
+  .flatpickr-day.startRange.nextMonthDay,
+  .flatpickr-day.endRange.nextMonthDay,
+  /* --- Include Hover states for all combinations --- */
+  .flatpickr-day.selected:hover,
+  .flatpickr-day.startRange:hover,
+  .flatpickr-day.endRange:hover,
+  .flatpickr-day.selected.prevMonthDay:hover,
+  .flatpickr-day.startRange.prevMonthDay:hover,
+  .flatpickr-day.endRange.prevMonthDay:hover,
+  .flatpickr-day.selected.nextMonthDay:hover,
+  .flatpickr-day.startRange.nextMonthDay:hover,
+  .flatpickr-day.endRange.nextMonthDay:hover,
+  /* --- Include Focus states for all combinations --- */
+  .flatpickr-day.selected:focus,
+  .flatpickr-day.startRange:focus,
+  .flatpickr-day.endRange:focus,
+  .flatpickr-day.selected.prevMonthDay:focus,
+  .flatpickr-day.startRange.prevMonthDay:focus,
+  .flatpickr-day.endRange.prevMonthDay:focus,
+  .flatpickr-day.selected.nextMonthDay:focus,
+  .flatpickr-day.startRange.nextMonthDay:focus,
+  .flatpickr-day.endRange.nextMonthDay:focus,
+  .flatpickr-day.selected:focus-visible,
+  .flatpickr-day.startRange:focus-visible,
+  .flatpickr-day.endRange:focus-visible,
+  .flatpickr-day.selected.prevMonthDay:focus-visible,
+  .flatpickr-day.startRange.prevMonthDay:focus-visible,
+  .flatpickr-day.endRange.prevMonthDay:focus-visible,
+  .flatpickr-day.selected.nextMonthDay:focus-visible,
+  .flatpickr-day.startRange.nextMonthDay:focus-visible,
+  .flatpickr-day.endRange.nextMonthDay:focus-visible {
     background-color: #392A3D;
     border-color: #392A3D;
     color: #fff;
@@ -90,6 +90,24 @@
     height: 4px;
     border-radius: 50%;
     background: #392A3D;
+  }
+
+  /* Calendar loading overlay */
+  /* container flex-centers its single child */
+  .loading-overlay {
+    display: flex !important;
+    justify-content: center;
+    align-items: center;
+  }
+
+  /* style the text as you like */
+  .loading-overlay__text {
+    font-size: 1rem;
+    color: #495057;
+  }
+
+  .loading-overlay .flatpickr-calendar {
+    display: none !important;
   }
 
 </style>
@@ -255,8 +273,10 @@
         // if the user’s looking beyond our last-loaded date…
         const firstVisible = new Date(instance.currentYear, instance.currentMonth);
         if (firstVisible > endDateToFetch) {
-          calendarDiv.innerText = "Loading availability data…";
-
+          // blank out the calendar and switch to a flex-center layout
+          calendarDiv.classList.add("loading-overlay");
+          calendarDiv.innerHTML = '<div class="loading-overlay__text">Loading availability data…</div>';
+          instance.calendarContainer.style.display = 'none';
           // fetch the next 12 months
           const nextStart = formatDate(endDateToFetch);
           endDateToFetch.setMonth(endDateToFetch.getMonth() + 12);
@@ -269,7 +289,10 @@
           instance.set("disable", unavailableDates);
           instance.redraw();
 
-          calendarDiv.innerText = "";
+          // restore the calendar container back to normal
+          calendarDiv.innerHTML = '';
+          calendarDiv.classList.remove("loading-overlay");
+          instance.calendarContainer.style.display = '';
         }
       },
       onDayCreate: (dObj, dStr, fp, dayElem) => {
