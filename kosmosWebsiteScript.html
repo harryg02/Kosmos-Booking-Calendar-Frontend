@@ -177,7 +177,8 @@
   // --- NEW: Function to Initialize Flatpickr (combines Steps 1 & 2) ---
   async function initializeCalendar(calendarId) {
     const calendarDiv = document.getElementById(calendarId);
-    calendarDiv.innerText = "Loading availability data..."; // Update status
+    calendarDiv.classList.add("loading-overlay");
+    calendarDiv.innerHTML = `<div class="loading-overlay__text">Loading availability data…</div>`;
 
     // Get the villa ID from the data attribute
     const currentVillaId = calendarDiv.getAttribute("data-villa-id");
@@ -217,7 +218,6 @@
     }
 
     console.log(`Initializing Flatpickr for ${calendarId} with disabled dates:`, unavailableDates);
-    calendarDiv.innerText = ""; // Clear loading message
 
     // Determine the number of months based on initial screen width
     const screenWidth = window.innerWidth;
@@ -267,6 +267,9 @@
         }
       },
       onReady: (selectedDates, dateStr, instance) => {
+        // clear our initial overlay
+        calendarDiv.classList.remove("loading-overlay");
+        calendarDiv.innerHTML = "";
         // compute `firstAvailable` as above…
         instance.jumpToDate(firstAvailable);
       },
