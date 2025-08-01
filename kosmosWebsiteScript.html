@@ -138,6 +138,10 @@
     return `${y}-${m}-${d}`;
   }
 
+  function ymdToLocalDate(s){
+    const [y,m,d] = s.split('-').map(Number);
+    return new Date(y, m-1, d);   // local midnight
+  }
 
   // --- Function to Fetch Unavailable Dates (Verified in Step 2) ---
   async function fetchUnavailableDates(villaId, startDate, endDate) {
@@ -220,7 +224,7 @@
 
     // Build every date in that range, find the first available
     const allDates = [];
-    let d = new Date(formattedStartDate);
+    let d = ymdToLocalDate(formattedStartDate);
     const end = new Date(formattedEndDate);
     while (d <= end) {
       allDates.push(formatDate(d));
@@ -274,7 +278,8 @@
           if (
             currentDate > start &&
             endOnlyDates.some(only => {
-              const od = new Date(only);
+              // convert to *local* date without UTC jump
+              const od = ymdToLocalDate(only);
               return od > start && od < currentDate;
             })
           ) {
@@ -345,7 +350,7 @@
           // prevent spanning over another end‑only
           else if (
             endOnlyDates.some(x => {
-              const xo = new Date(x);
+              const xo = ymdToLocalDate(x);   // local-midnight, no UTC jump
               return xo > start && xo < day;
             })
           ) {
