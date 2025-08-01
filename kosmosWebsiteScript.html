@@ -117,6 +117,21 @@
     overflow: hidden;
     display: inline-block;
   }
+  /* Fix Booking widget clipped on lower height screens by allowing scrolling */
+  @media
+    screen and (max-height: 680px),
+    screen and (max-width: 767px) and (max-height: 755px)
+  {
+    .popup-112,
+    .booking-calendar {
+      position: fixed !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+      border-radius: 0 !important;
+    }
+  }
 
   /* keyframes for the rotation */
   @keyframes spin {
@@ -250,7 +265,7 @@
       mode: "range",
       showMonths: monthsToShow,
       dateFormat: "Y-m-d",
-      minDate: "today",
+      minDate: firstAvailable,
       disable: unavailableDates,
       onDayCreate: function(dObj, dStr, fp, dayElem) {
         const currentDate = dayElem.dateObj;
@@ -332,9 +347,11 @@
         const start      = picked === 1 && fp.selectedDates[0];
 
         // Always mark it so the CSS dot ::after is drawn
-        if (isEndOnly) {
+        
+        if (isEndOnly && dayStr !== fp.formatDate(new Date(), "Y-m-d")) {
           dayElem.classList.add("only-end-date");
         }
+      
 
         if (picked === 0) {
           // -- STATE 1: no pick yet --
