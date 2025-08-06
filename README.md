@@ -32,49 +32,9 @@ This system allows guests to select their desired villa on the website and immed
 
 The following code is intended to be placed within the **Custom Code** sections of the Webflow project.
 
-### 1. Head Code
+### 1. Header/Footer Code
 
-Place the following CSS styles in **Project Settings > Custom Code > Head Code**. This code handles all the custom styling for the Flatpickr calendar, including selected states, range highlighting, loading indicators, and responsiveness.
-
-```html
-<style>
-  /* Flatpickr custom styles */
-  .flatpickr-calendar {
-    box-shadow: none !important;
-  }
-  .flatpickr-day.selected,
-  .flatpickr-day.startRange,
-  /* ... (all other CSS rules from your code) ... */
-  .loading-overlay .flatpickr-calendar {
-    display: none !important;
-  }
-</style>```
-
-### 2. Footer Code (Before `</body>` tag)
-
-Place the following JavaScript in **Project Settings > Custom Code > Footer Code**. This is the core logic that powers the calendar.
-
-**Important:** You must include the Flatpickr library *before* this custom script.
-
-```html
-<!-- Include Flatpickr JS Library first -->
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-<!-- Custom Calendar Logic -->
-<script>
-  // --- Helper Function to format Date to YYYY-MM-DD ---
-  function formatDate(date) {
-    // ... (all other JavaScript code from your file) ...
-  }
-  
-  // ... (rest of the script) ...
-
-  // Add event listeners to the specific buttons
-  document.addEventListener('DOMContentLoaded', function() {
-    // ... (DOM event listeners) ...
-  });
-</script>
-```
+Copy and paste contents from kosmosWebsiteScript.html in Webflow **Project Settings > Custom Code > Head Code / Footer Code**. This code handles all the custom styling for the Flatpickr calendar, including selected states, range highlighting, loading indicators, and responsiveness.
 
 ### 3. Webflow Designer Setup
 
