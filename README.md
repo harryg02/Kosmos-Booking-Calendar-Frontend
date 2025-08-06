@@ -34,9 +34,9 @@ The following code is intended to be placed within the **Custom Code** sections 
 
 ### 1. Header/Footer Code
 
-Copy and paste contents from kosmosWebsiteScript.html in Webflow **Project Settings > Custom Code > Head Code / Footer Code**. This code handles all the custom styling for the Flatpickr calendar, including selected states, range highlighting, loading indicators, and responsiveness.
+Copy and paste contents from kosmosWebsiteScript.html in Webflow **Project Settings > Custom Code > Head Code or Footer Code**. This code handles all the custom styling for the Flatpickr calendar, including selected states, range highlighting, loading indicators, and responsiveness.
 
-### 3. Webflow Designer Setup
+### 2. Webflow Designer Setup
 
 *   **Modal Pop-ups:** Create modal/pop-up elements for each villa's calendar.
 *   **Trigger Buttons:** Ensure the "Book" buttons for each villa have the specific IDs used in the `DOMContentLoaded` event listener (e.g., `Book-Galaxy-Villa`, `Book-Stargazing-Villa`).
