@@ -11,7 +11,7 @@ This system allows guests to select their desired villa on the website and immed
 ## Architecture
 
 *   **Frontend:** The user interface is built and hosted on **Webflow**. It uses custom code embeds for CSS styling and JavaScript logic.
-    *   **Repository:** The source code for the frontend function is located at: [https://github.com/kosmosharry/mews-availability.js](https://github.com/harryg02/Kosmos-Booking-Calendar-Frontend)
+    *   **Repository:** The source code for the frontend function is located at: [https://github.com/harryg02/Kosmos-Booking_Calendar-Frontend](https://github.com/harryg02/Kosmos-Booking-Calendar-Frontend)
     *   **UI Library:** [Flatpickr.js](https://flatpickr.js.org/) is used to render the interactive calendar.
     *   **Logic:** Custom Vanilla JavaScript handles user interactions (opening the calendar), calling the backend API, processing availability data, and constructing the final Mews deeplink.
 
